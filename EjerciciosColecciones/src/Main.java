@@ -40,7 +40,7 @@ public class Main {
         System.out.println("----------------------------------------------------------------------------------");
         System.out.println("Ejercicio 2: Set - Registro de Usuarios Únicos");
 
-// ---- "Base de Datos" de usuarios ya guardados anteriormente ----
+        // ---- "Base de Datos" de usuarios ya guardados anteriormente ----
         Set<String> usuariosExistentes = new HashSet<>();
         usuariosExistentes.add("Javier");
         usuariosExistentes.add("Ezequiel");
@@ -147,12 +147,18 @@ public class Main {
         notas.add(6.3);
         notas.add(7.0);
 
-        // Paso 4: Contar cuántas notas aprobadas existen
-        long cantidadAprobadas = notas.stream()
-                                                .filter(nota -> nota > 4.0) // Filtra las notas mayores a 4.0
-                                                .count();// Cuenta cuántas pasaron el filtro
+        System.out.println("Total notas: " + notas);
 
+        System.out.println("\n--- Las notas aprobadas son: ---");
+        // Paso 3 y 4 combinados correctamente
+        long cantidadAprobadas = notas.stream()
+                .filter(nota -> nota >= 4.0)   // 1. Filtra: Solo pasan las aprobadas
+                .peek(System.out::println)            // 2. Muestra: Imprime cada nota que va pasando
+                .count();                             // 3. Cuenta: Cuenta el total y cierra el Stream
+
+        System.out.println("\n--- Resumen ---");
         System.out.println("Cantidad de notas aprobadas: " + cantidadAprobadas);
+
 
 
 
