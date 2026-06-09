@@ -38,8 +38,8 @@ public class Main {
         System.out.println("Juego: " + juego2.getNombre() + ", Precio: " + juego2.getPrecio());
         juego5.setPrecio(0);
         System.out.println("Juego: " + juego5.getNombre() + ", Precio: " + juego5.getPrecio());
-        System.out.println("Juego: " + juego6.getNombre() + ", Precio: " + juego6.getPrecio());
-        System.out.println("Juego: " + juego7.getNombre() + ", Precio: " + juego7.getPrecio());
+        System.out.println("Juego: " + juego6.getNombre() + ", Precio: " + juego6.getPrecio() + ", Requisitos: " + juego6.requisitosMinimos);
+        System.out.println("Juego: " + juego7.getNombre() + ", Precio: " + juego7.getPrecio() + ", Consola Compatible: " + juego7.consolaCompatible);
 
 
 
