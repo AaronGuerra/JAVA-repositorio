@@ -15,7 +15,6 @@ public class ConsoleGame extends VideoGame{
     public void showInfo() {
         super.showInfo(); // Llama al showInfo() del padre
         System.out.println("Consola Compatible: " + this.consolaCompatible);
-        System.out.println("------------------------------------------------------------------------------");
     }
 
 
