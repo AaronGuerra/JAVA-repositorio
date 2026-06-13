@@ -9,7 +9,7 @@ public class Funcion {
     private int capacidad;
     private int asientosDisponibles;
     private List<Entrada> entradasVendidas;
-    private boolean[] mapaAsientos; // Control real de duplicados de asientos
+    private boolean[] mapaAsientos;
 
     public Funcion(Pelicula pelicula, String horario, int capacidad) {
         this.pelicula = pelicula;
@@ -23,10 +23,11 @@ public class Funcion {
     public Pelicula getPelicula() { return pelicula; }
     public String getHorario() { return horario; }
     public int getAsientosDisponibles() { return asientosDisponibles; }
+    public List<Entrada> getEntradasVendidas() { return entradasVendidas; }
 
     public boolean verificarAsientoDisponible(int numeroAsiento) {
         if (numeroAsiento < 1 || numeroAsiento > capacidad) return false;
-        return !mapaAsientos[numeroAsiento - 1]; // true si está libre
+        return !mapaAsientos[numeroAsiento - 1];
     }
 
     public boolean validarAccesoCliente(Cliente cliente) {
@@ -34,6 +35,7 @@ public class Funcion {
     }
 
     public void registrarVentaAsiento(Entrada entrada) {
+        // Al haber agregado el método getNumeroAsiento() en Entrada, esta línea funciona de inmediato
         int indice = entrada.getNumeroAsiento() - 1;
         this.mapaAsientos[indice] = true;
         this.entradasVendidas.add(entrada);

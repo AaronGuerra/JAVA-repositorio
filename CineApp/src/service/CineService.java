@@ -1,38 +1,51 @@
 package service;
 
 import model.*;
-import util.ConsolaUtil; // Importación de nuestra nueva capa de utilidades
+import util.ConsolaUtil;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CineService {
-    private List<Cliente> clientes;
-    private List<Funcion> funciones;
-    private List<Pelicula> carteleraPeliculas;
+    // Migración a Maps para cumplir el BONUS y optimizar el Pool de datos
+    private Map<String, Cliente> poolClientes;
+    private Map<String, Pelicula> poolPeliculas;
+    private List<Funcion> funciones; // Las funciones se mantienen en lista por sus horarios variados
 
     public CineService() {
-        this.clientes = new ArrayList<>();
+        this.poolClientes = new HashMap<>();
+        this.poolPeliculas = new HashMap<>();
         this.funciones = new ArrayList<>();
-        this.carteleraPeliculas = new ArrayList<>();
         cargarDatosDemostracion();
     }
 
     private void cargarDatosDemostracion() {
-        Pelicula p1 = new Pelicula("Toy Story", 95, 0);
-        Pelicula p2 = new Pelicula("Deadpool", 108, 18);
-        carteleraPeliculas.add(p1);
-        carteleraPeliculas.add(p2);
+        Pelicula p1 = new Pelicula("Toy Story 2", 95, 0);
+        Pelicula p2 = new Pelicula("Deadpool and Wolverine", 108, 18);
 
-        funciones.add(new Funcion(p1, "14:00", 3)); // Sala pequeña para pruebas
-        funciones.add(new Funcion(p2, "22:00", 5));
+        // Almacenamos usando el título en minúsculas como clave para evitar problemas de mayúsculas
+        poolPeliculas.put(p1.getTitulo().toLowerCase(), p1);
+        poolPeliculas.put(p2.getTitulo().toLowerCase(), p2);
+
+        funciones.add(new Funcion(p1, "14:00", 7)); // Sala pequeña para pruebas
+        funciones.add(new Funcion(p2, "22:00", 7));
+
+        // Cliente semilla para pruebas rápidas
+        poolClientes.put("aaron", new Cliente("Aarón", 34));
+        poolClientes.put("sara", new Cliente("Sara", 33));
+        poolClientes.put("jona", new Cliente("Jonatán", 31));
+        poolClientes.put("joel", new Cliente("Joel", 27));
+        poolClientes.put("samuel", new Cliente("Samuel", 21));
+        poolClientes.put("daniel", new Cliente("Daniel", 19));
     }
 
     public void iniciarMenu() {
         int opcion = -1;
         while (opcion != 0) {
-            System.out.println("\n--- 🎬 GESTIÓN DE CINE (ESTRUCTURA MÓDULO UTIL) ---");
+            System.out.println("\n--- 🎬 SISTEMA DE CINE (POOL CON MAPS) ---");
             System.out.println("1) Registrar cliente");
-            System.out.println("2) Agregar película a la cartelera");
+            System.out.println("2) Agregar película a la cartelera (Pool)");
             System.out.println("3) Crear función para una película");
             System.out.println("4) Ver cartelera de funciones");
             System.out.println("5) Comprar entrada");
@@ -49,7 +62,7 @@ public class CineService {
                 case 6 -> verEntradasCliente();
                 case 0 -> {
                     System.out.println("Saliendo del sistema...");
-                    ConsolaUtil.cerrarScanner(); // Cierre limpio del recurso global
+                    ConsolaUtil.cerrarScanner();
                 }
                 default -> System.out.println("⚠️ Opción inválida.");
             }
@@ -58,18 +71,35 @@ public class CineService {
 
     private void crearCliente() {
         String nombre = ConsolaUtil.leerTexto("Ingrese el nombre del cliente: ");
-        int edad = ConsolaUtil.leerEntero("Ingrese la edad del cliente: ");
+        String llave = nombre.toLowerCase();
 
+        // Validación instantánea gracias al Map
+        if (poolClientes.containsKey(llave)) {
+            System.out.println("⚠️ Ya existe un cliente registrado con ese nombre.");
+            ConsolaUtil.esperarEnter();
+            return;
+        }
+
+        int edad = ConsolaUtil.leerEntero("Ingrese la edad del cliente: ");
         if (nombre.isEmpty() || edad < 0) {
             System.out.println("⚠️ Datos inválidos.");
             return;
         }
-        clientes.add(new Cliente(nombre, edad));
-        System.out.println("✅ Cliente registrado con éxito.");
+
+        poolClientes.put(llave, new Cliente(nombre, edad));
+        System.out.println("✅ Cliente registrado con éxito en el pool.");
     }
 
     private void agregarPelicula() {
         String titulo = ConsolaUtil.leerTexto("Título de la película: ");
+        String llave = titulo.toLowerCase();
+
+        if (poolPeliculas.containsKey(llave)) {
+            System.out.println("⚠️ Esta película ya existe en el pool de la cartelera.");
+            ConsolaUtil.esperarEnter();
+            return;
+        }
+
         int duracion = ConsolaUtil.leerEntero("Duración en minutos: ");
         int edadMinima = ConsolaUtil.leerEntero("Edad mínima requerida (0 para ATP): ");
 
@@ -77,26 +107,36 @@ public class CineService {
             System.out.println("⚠️ Datos de película inválidos.");
             return;
         }
-        carteleraPeliculas.add(new Pelicula(titulo, duracion, edadMinima));
-        System.out.println("✅ Película agregada al catálogo global.");
+
+        poolPeliculas.put(llave, new Pelicula(titulo, duracion, edadMinima));
+        System.out.println("✅ Película agregada al pool de la cartelera.");
     }
 
     private void crearFuncion() {
-        if (carteleraPeliculas.isEmpty()) {
-            System.out.println("⚠️ No hay películas disponibles en el catálogo.");
+        if (poolPeliculas.isEmpty()) {
+            System.out.println("⚠️ No hay películas en el pool para crear una función.");
             return;
         }
-        System.out.println("\n--- SELECCIONE UNA PELÍCULA ---");
-        for (int i = 0; i < carteleraPeliculas.size(); i++) {
-            System.out.printf("[%d] %s\n", i + 1, carteleraPeliculas.get(i).obtenerInformacion());
+
+        System.out.println("\n--- PELÍCULAS DISPONIBLES EN POOL ---");
+        // Recorremos los valores del mapa directamente
+        for (Pelicula p : poolPeliculas.values()) {
+            System.out.println("- " + p.obtenerInformacion());
         }
-        int indicePel = ConsolaUtil.leerEntero("Número de película: ") - 1;
-        if (indicePel < 0 || indicePel >= carteleraPeliculas.size()) return;
+
+        String titulo = ConsolaUtil.leerTexto("Escriba el título exacto de la película para la función: ");
+        Pelicula peliculaSeleccionada = poolPeliculas.get(titulo.toLowerCase());
+
+        if (peliculaSeleccionada == null) {
+            System.out.println("❌ Película no encontrada en el pool.");
+            ConsolaUtil.esperarEnter();
+            return;
+        }
 
         String horario = ConsolaUtil.leerTexto("Ingrese el horario (ej. 19:30): ");
-        int capacidad = ConsolaUtil.leerEntero("Capacidad de la sala: ");
+        int capacity = ConsolaUtil.leerEntero("Capacidad de la sala: ");
 
-        funciones.add(new Funcion(carteleraPeliculas.get(indicePel), horario, capacidad));
+        funciones.add(new Funcion(peliculaSeleccionada, horario, capacity));
         System.out.println("✅ Función creada exitosamente.");
     }
 
@@ -114,41 +154,41 @@ public class CineService {
     }
 
     private void comprarEntrada() {
-        if (clientes.isEmpty() || funciones.isEmpty()) {
-            System.out.println("⚠️ Requieres clientes y funciones en el sistema.");
+        if (poolClientes.isEmpty() || funciones.isEmpty()) {
+            System.out.println("⚠️ Se requieren clientes y funciones en el sistema.");
             return;
         }
 
         verCarteleraFunciones();
-        int indiceFuncion = ConsolaUtil.leerEntero("Seleccione la función: ") - 1;
+        int indiceFuncion = ConsolaUtil.leerEntero("Seleccione el número de función: ") - 1;
         if (indiceFuncion < 0 || indiceFuncion >= funciones.size()) return;
         Funcion funcionSeleccionada = funciones.get(indiceFuncion);
 
-        // Regla de negocio: Validación de capacidad disponible de sala
         if (funcionSeleccionada.getAsientosDisponibles() <= 0) {
-            System.out.println("❌ Compra rechazada: La sala de esta función está llena.");
+            System.out.println("❌ Sala llena.");
             return;
         }
 
-        System.out.println("\n--- SELECCIONE CLIENTE ---");
-        for (int i = 0; i < clientes.size(); i++) {
-            System.out.printf("[%d] %s (Edad: %d)\n", i + 1, clientes.get(i).getNombre(), clientes.get(i).getEdad());
-        }
-        int indiceCliente = ConsolaUtil.leerEntero("Número de cliente: ") - 1;
-        if (indiceCliente < 0 || indiceCliente >= clientes.size()) return;
-        Cliente clienteSeleccionado = clientes.get(indiceCliente);
+        // Búsqueda directa de cliente por su clave
+        String nombreCliente = ConsolaUtil.leerTexto("Ingrese el nombre del cliente que compra: ");
+        Cliente clienteSeleccionado = poolClientes.get(nombreCliente.toLowerCase());
 
-        // Regla de negocio: Validación de la restricción de edad
+        if (clienteSeleccionado == null) {
+            System.out.println("❌ El cliente no está registrado en el sistema.");
+            ConsolaUtil.esperarEnter();
+            return;
+        }
+
         if (!funcionSeleccionada.validarAccesoCliente(clienteSeleccionado)) {
             System.out.printf("❌ Acceso Denegado: %s tiene %d años. Película requiere un mínimo de %d años.\n",
                     clienteSeleccionado.getNombre(), clienteSeleccionado.getEdad(), funcionSeleccionada.getPelicula().getEdadMinima());
+            ConsolaUtil.esperarEnter();
             return;
         }
 
         int numeroAsiento = ConsolaUtil.leerEntero("Número de asiento: ");
-        // Regla de negocio: Evitar venta duplicada de un mismo asiento físico
         if (!funcionSeleccionada.verificarAsientoDisponible(numeroAsiento)) {
-            System.out.println("❌ Error: El asiento ya se encuentra vendido o está fuera del rango de la sala.");
+            System.out.println("❌ Asiento no disponible.");
             return;
         }
 
@@ -163,20 +203,24 @@ public class CineService {
         clienteSeleccionado.agregarEntrada(nuevaEntrada);
 
         System.out.println("\n🎉 ¡Entrada comprada con éxito!\n" + nuevaEntrada.mostrarResumen());
+        ConsolaUtil.esperarEnter();
     }
 
     private void verEntradasCliente() {
-        if (clientes.isEmpty()) {
+        if (poolClientes.isEmpty()) {
             System.out.println("No hay clientes registrados.");
             return;
         }
-        for (int i = 0; i < clientes.size(); i++) {
-            System.out.printf("[%d] %s\n", i + 1, clientes.get(i).getNombre());
-        }
-        int idx = ConsolaUtil.leerEntero("Seleccione cliente: ") - 1;
-        if (idx < 0 || idx >= clientes.size()) return;
 
-        Cliente c = clientes.get(idx);
+        String nombreCliente = ConsolaUtil.leerTexto("Ingrese el nombre del cliente a consultar: ");
+        Cliente c = poolClientes.get(nombreCliente.toLowerCase());
+
+        if (c == null) {
+            System.out.println("❌ Cliente no encontrado.");
+            ConsolaUtil.esperarEnter();
+            return;
+        }
+
         if (c.getEntradas().isEmpty()) {
             System.out.println("Este cliente no posee tickets asociados.");
         } else {
@@ -185,5 +229,7 @@ public class CineService {
                 System.out.println(e.mostrarResumen());
             }
         }
+        //Agregamos la pausa al final de la lectura de datos
+        ConsolaUtil.esperarEnter();
     }
 }

@@ -34,6 +34,12 @@ public class ConsolaUtil {
             }
         }
     }
+    // Pausa el sistema hasta que se presione ENTER
+    public static void esperarEnter() {
+        asegurarScanner();
+        System.out.println("\n🔹 Presione [ENTER] para continuar...");
+        scanner.nextLine();
+    }
 
     // Método para cerrar el recurso al apagar el sistema (buena práctica)
     public static void cerrarScanner() {
