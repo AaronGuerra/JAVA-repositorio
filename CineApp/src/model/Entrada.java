@@ -4,37 +4,18 @@ public class Entrada {
     private Cliente cliente;
     private Funcion funcion;
     private int numeroAsiento;
+    protected double precioBase = 5000.0;
 
-    // Constructor
     public Entrada(Cliente cliente, Funcion funcion, int numeroAsiento) {
         this.cliente = cliente;
         this.funcion = funcion;
         this.numeroAsiento = numeroAsiento;
     }
 
-    // Getters
-    public Cliente getCliente() {
-        return cliente;
-    }
+    public double calcularPrecio() { return precioBase; }
 
-    public Funcion getFuncion() {
-        return funcion;
-    }
-
-    public int getNumeroAsiento() {
-        return numeroAsiento;
-    }
-
-    // Método para mostrar resumen de la entrada
     public String mostrarResumen() {
-        return "Entrada de cine:" +
-                "\nCliente: " + cliente.getNombre() +
-                " (Edad: " + cliente.getEdad() + ")" +
-                "\nPelícula: " + funcion.getPelicula().getTitulo() +
-                "\nHorario: " + funcion.getHorario() +
-                "\nAsiento Nº: " + numeroAsiento +
-                "\n-------------------------------------------------";
+        return String.format("ASIENTO: %d | Película: %s | Horario: %s | Precio: $%.2f",
+                numeroAsiento, funcion.getPelicula().getTitulo(), funcion.getHorario(), calcularPrecio());
     }
-
-
 }

@@ -5,47 +5,38 @@ import java.util.List;
 
 public class Funcion {
     private Pelicula pelicula;
-    private String horario; // Ejemplo: "20:00"
+    private String horario;
     private int capacidad;
     private int asientosDisponibles;
-    private List<Cliente> entradasVendidas;
+    private List<Entrada> entradasVendidas;
+    private boolean[] mapaAsientos; // Control real de duplicados de asientos
 
-    // Constructor
     public Funcion(Pelicula pelicula, String horario, int capacidad) {
         this.pelicula = pelicula;
         this.horario = horario;
         this.capacidad = capacidad;
         this.asientosDisponibles = capacidad;
         this.entradasVendidas = new ArrayList<>();
+        this.mapaAsientos = new boolean[capacidad];
     }
 
-    // Getters
     public Pelicula getPelicula() { return pelicula; }
     public String getHorario() { return horario; }
-    public int getCapacidad() { return capacidad; }
     public int getAsientosDisponibles() { return asientosDisponibles; }
-    public List<Cliente> getEntradasVendidas() { return entradasVendidas; }
 
-    // Método para vender entrada
-    public boolean venderEntrada(Cliente cliente) {
-        if (asientosDisponibles > 0 && pelicula.puedeVer(cliente.edad)) {
-            entradasVendidas.add(cliente);
-            asientosDisponibles--;
-            System.out.println("Entrada vendida a " + cliente.getNombre() + " para la película " + pelicula.getTitulo());
-            return true;
-        } else {
-            System.out.println("No se pudo vender entrada a " + cliente.getNombre() + " (sin asientos o restricción de edad).");
-            return false;
-        }
+    public boolean verificarAsientoDisponible(int numeroAsiento) {
+        if (numeroAsiento < 1 || numeroAsiento > capacidad) return false;
+        return !mapaAsientos[numeroAsiento - 1]; // true si está libre
     }
 
-    // Mostrar información de la función
-    public String showInfo() {
-        return "Película: " + pelicula.getTitulo() +
-                "\nHorario: " + horario +
-                "\nCapacidad total: " + capacidad +
-                "\nAsientos disponibles: " + asientosDisponibles +
-                "\nEntradas vendidas: " + entradasVendidas.size() +
-                "\n-------------------------------------------------";
+    public boolean validarAccesoCliente(Cliente cliente) {
+        return pelicula.puedeVer(cliente.getEdad());
+    }
+
+    public void registrarVentaAsiento(Entrada entrada) {
+        int indice = entrada.getNumeroAsiento() - 1;
+        this.mapaAsientos[indice] = true;
+        this.entradasVendidas.add(entrada);
+        this.asientosDisponibles--;
     }
 }
